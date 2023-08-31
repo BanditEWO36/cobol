@@ -1,0 +1,95 @@
+﻿000001 IDENTIFICATION DIVISION.
+       PROGRAM-ID. ROMAN-NUMERALS.
+       ENVIRONMENT DIVISION.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01 WS-NUMBER PIC 9999.
+       01 WS-RESULT PIC X(20) VALUE SPACES.
+       01 WS-DIGIT    PIC 9.
+       01 WS-PLACE    PIC 9999.
+       01 WS-COUNTER  PIC 9.
+       01 MAIN-CHAR   PIC X.
+       01 MID-CHAR    PIC X.
+       01 NEXT-CHAR   PIC X.
+       01 WS-NEW-SPOT PIC 99.
+      
+       PROCEDURE DIVISION.
+       ROMAN-NUMERALS.
+           DISPLAY "I=1, V=5, X=10, L=50, C=100, D=500, M=1000"
+      * II = 2, III = 3, VI = 6, AND LXX = 70, BUT IV = 4 AND XC = 90
+      
+           MOVE 1 TO WS-NEW-SPOT
+           PERFORM VARYING WS-COUNTER FROM 1 BY 1 UNTIL WS-COUNTER > 4
+              MOVE WS-NUMBER(WS-COUNTER:1) TO WS-DIGIT
+              EVALUATE WS-COUNTER
+                 WHEN 1 MOVE 1000 TO WS-PLACE
+                 WHEN 2 MOVE  100 TO WS-PLACE
+                 WHEN 3 MOVE   10 TO WS-PLACE 
+                 WHEN 4 MOVE    1 TO WS-PLACE 
+              END-EVALUATE 
+      *       DISPLAY WS-PLACE "'S PLACE: " WS-DIGIT
+              PERFORM CHARACTER-PLACEMENT
+           END-PERFORM
+
+
+           DISPLAY "ORIGINAL INPUT: " WS-NUMBER
+           DISPLAY "ROMAN NUMERAL: " WS-RESULT
+
+
+           STOP RUN.
+      
+      * FUNCTION TO PLACE THE CHARACTERS
+       CHARACTER-PLACEMENT.
+      * CHECK BY PLACE
+      * IF 1'S PLACE < 0, PUT NOTHING
+      * IF 1'S PLACE 1-3, I = 1, II = 2, III = 3
+      * IF 1'S PLACE = 4, PUT IT AS 1 LESS THAN 5, OR IV
+      * IF 1'S PLACE = 6-8, THEN 6 = VI, 7 = VII, 8 = VIII
+      * IF 1'S PLACE = 9, THEN PUT IT AS 1 LESS THAN 10, OR IX
+      * SAME CONCEPT FOR ALL OTHER PLACES
+           EVALUATE WS-PLACE 
+              WHEN 1000   MOVE "M" TO MAIN-CHAR
+              WHEN  100   MOVE "C" TO MAIN-CHAR
+                          MOVE "D" TO MID-CHAR
+                          MOVE "M" TO NEXT-CHAR
+              WHEN   10   MOVE "X" TO MAIN-CHAR
+                          MOVE "L" TO MID-CHAR
+                          MOVE "C" TO NEXT-CHAR
+              WHEN    1   MOVE "I" TO MAIN-CHAR
+                          MOVE "V" TO MID-CHAR
+                          MOVE "X" TO NEXT-CHAR
+           END-EVALUATE 
+
+
+           IF WS-DIGIT < 4 THEN 
+      * IF 0, 1, 2, OR 3: PLACE THE MAIN CHARACTER THAT MANY TIMES
+              PERFORM WS-DIGIT TIMES
+                 ADD 1 TO WS-NEW-SPOT GIVING WS-NEW-SPOT
+                 MOVE MAIN-CHAR TO WS-RESULT(WS-NEW-SPOT:1)
+              END-PERFORM
+           ELSE IF WS-DIGIT = 4 THEN 
+      * IF 4: PLACE THE MAIN CHARACTER THEN THE MID CHARACTER
+              ADD 1 TO WS-NEW-SPOT GIVING WS-NEW-SPOT 
+              MOVE MAIN-CHAR TO WS-RESULT(WS-NEW-SPOT:1)
+              ADD 1 TO WS-NEW-SPOT GIVING WS-NEW-SPOT 
+              MOVE MID-CHAR TO WS-RESULT(WS-NEW-SPOT:1)
+           ELSE IF WS-DIGIT = 5 THEN
+      * IF 5: PLACE THE MID CHARACTER
+              ADD 1 TO WS-NEW-SPOT GIVING WS-NEW-SPOT 
+              MOVE MID-CHAR TO WS-RESULT(WS-NEW-SPOT:1)
+           ELSE IF WS-DIGIT < 9 THEN 
+      * IF 6, 7, OR 8: PLACE THE MID CHARACTER, THEN MAIN CHARACTERS AFTER IT
+              ADD 1 TO WS-NEW-SPOT GIVING WS-NEW-SPOT 
+              MOVE MID-CHAR TO WS-RESULT(WS-NEW-SPOT:1)
+              PERFORM VARYING WS-COUNTER FROM 6 BY 1 UNTIL 
+                 WS-COUNTER > WS-DIGIT 
+                    ADD 1 TO WS-NEW-SPOT GIVING WS-NEW-SPOT 
+                    MOVE MAIN-CHAR TO WS-RESULT(WS-NEW-SPOT:1)
+              END-PERFORM
+           ELSE IF WS-DIGIT = 9 THEN
+      * IF 9: PLACE THE MAIN CHARACTER THEN THE NEXT CHARACTER
+              ADD 1 TO WS-NEW-SPOT GIVING WS-NEW-SPOT 
+              MOVE MAIN-CHAR TO WS-RESULT(WS-NEW-SPOT:1)
+              ADD 1 TO WS-NEW-SPOT GIVING WS-NEW-SPOT 
+              MOVE NEXT-CHAR TO WS-RESULT(WS-NEW-SPOT:1)
+           END-IF.
